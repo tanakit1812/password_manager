@@ -1,6 +1,6 @@
 [Setup]
 AppName=Password Manager
-AppVersion=1.0
+AppVersion=1.1
 AppPublisher=K1T Tech.
 DefaultDirName={localappdata}\Password Manager
 DefaultGroupName=Password Manager

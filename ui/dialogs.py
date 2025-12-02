@@ -588,21 +588,38 @@ class PasswordDetailDialog(QDialog):
         entry = self.password_entries[self.current_index]
         dialog = PasswordEntryDialog(self, entry_data=entry)
         if dialog.exec():
-            updated = dialog.result
-            self.password_entries[self.current_index] = updated
-
-            # อัปเดตข้อมูลจริงในหน้าหลัก
-            main = self.parent()
-            if main and hasattr(main, 'data') and main.current_folder:
-                folder_data = main.data['folders'][main.current_folder]
-                for i, item in enumerate(folder_data):
-                    if item is entry:  # อ้างอิงเดียวกัน
-                        folder_data[i] = updated
-                        main.save_data()
-                        break
-
+            # รับข้อมูลที่แก้ไข
+            updated_data = dialog.result
+        
+            # อัปเดตในหน้าต่างนี้
+            self.password_entries[self.current_index] = updated_data
+        
+            # ส่งกลับไปยัง MainWindow และบันทึก
+            main_window = self.parent()
+            if main_window:
+                try:
+                    # อัปเดตในข้อมูลหลัก
+                    if hasattr(main_window, 'current_folder') and main_window.current_folder:
+                        folder_data = main_window.data['folders'].get(main_window.current_folder, [])
+                    
+                        # ค้นหา entry เดิมและแทนที่
+                        for i in range(len(folder_data)):
+                            if (folder_data[i].get('title') == entry.get('title') and 
+                                folder_data[i].get('username') == entry.get('username')):
+                                folder_data[i] = updated_data
+                                break
+                    
+                        # บันทึกลงไฟล์
+                        main_window.save_data()
+                    
+                        # Reload MainWindow เพื่อแสดงข้อมูลใหม่
+                        main_window.load_passwords()
+                except Exception as e:
+                    print(f"Error updating entry: {e}")
+        
+            # โหลดหน้าต่างแสดงข้อมูลใหม่
             self.load_entry()
-            QMessageBox.information(self, "สำเร็จ", "แก้ไขบัญชีเรียบร้อย")
+            QMessageBox.information(self, "สำเร็จ", "แก้ไขบัญชีเรียบร้อยแล้ว")
 
     def delete_current_entry(self):
         entry = self.password_entries[self.current_index]
